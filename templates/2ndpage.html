@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <!-- Other head elements -->
+  <meta charset="UTF-8">
+  <title>Environmental Impact Assessment Form</title>
+  <link href="https://fonts.googleapis.com/css2?family=Ceviche+One&family=Cookie&family=Dancing+Script:wght@700&family=El+Messiri:wght@400;500&family=Fruktur&family=Great+Vibes&family=Merienda:wght@700&family=Pacifico&family=Satisfy&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="{{ url_for('static', filename='2nd_page_style.css') }}">
+  <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyDu9WmzWfQnxsqJhWLE8CTMlSYB0VRUrkg&libraries=places&callback=initMap" async defer></script>
+  <style>
+    .wide-input {
+      width: 100%; /* This will make the input fields take the full width of their container */
+      border: 1px solid #ccc;
+      padding: 8px;
+    }
+  </style>
+</head>
+
+<body>
+<!-- Other body content -->
+<div class="header">
+  <img src="{{ url_for('static', filename='images/logo.png') }}" alt="Logo" class="logo">
+  <span class="logo-text">EcoIntelliSense</span>
+</div>
+
+<div class="container">
+  <h1>Submit your project</h1>
+  <form action="{{ url_for("submit")}}" method="post">
+    <div class="form-group">
+      <label>Project Name:</label>
+      <input name="projectname" id="projectname" type="text" required autofocus placeholder="Title of Project" style="border: 1px solid #ccc; padding: 8px;"/>
+    </div>
+
+    <div class="form-group">
+      <label>Project Location:</label>
+      <input name="projectlocation" id="projectlocation" type="text" required placeholder="Street Address" style="border: 1px solid #ccc; padding: 8px;"/>
+    </div>
+
+    <div class="form-group">
+      <label>Project Size (sq meters):</label>
+      <input name="projectsize" id="projectsize" type="number" required placeholder="Project Dimensions (Enter in Map Below)" style="border: 1px solid #ccc; padding: 8px;"/>
+    </div>
+
+    <div class="form-group">
+      <label>Select Project Area:</label>
+      <div id="map" style="height: 400px;"></div>
+    </div>
+
+    <button type="submit">Submit Assessment</button>
+  </form>
+</div>
+
+<script>
+  let map;
+  let markers = [];
+  let idleListener;
+
+  function initMap() {
+    map = new google.maps.Map(document.getElementById("map"), {
+      center: { lat: -34.397, lng: 150.644 },
+      zoom: 8,
+    });
+  
+    map.addListener("click", (event) => {
+      if (markers.length < 4) {
+        addMarker(event.latLng);
+      }
+    });
+  
+    // Use a timeout to ensure that the idle event is properly triggered
+    let idleTimeout;
+    map.addListener("idle", () => {
+      clearTimeout(idleTimeout);
+      idleTimeout = setTimeout(() => {
+        if (markers.length === 4) {
+          calculateArea();
+        }
+      }, 500); // Adjust the timeout duration as needed
+    });
+  }
+
+  function addMarker(location) {
+    markers.push(location);
+
+    const marker = new google.maps.Marker({
+      position: location,
+      map: map,
+    });
+
+    marker.addListener("click", () => {
+      removeMarker(marker);
+    });
+
+    if (markers.length === 4) {
+      google.maps.event.removeListener(idleListener);
+    }
+  }
+
+  function removeMarker(marker) {
+    const index = markers.indexOf(marker.getPosition());
+    markers.splice(index, 1);
+    marker.setMap(null);
+
+    // Re-add idle listener if markers are less than 4
+    if (markers.length < 4) {
+      idleListener = map.addListener("idle", () => {
+        if (markers.length === 4) {
+          calculateArea();
+        }
+      });
+    }
+  }
+
+  function calculateArea() {
+    const bounds = new google.maps.LatLngBounds();
+    markers.forEach((marker) => bounds.extend(marker));
+    map.fitBounds(bounds);
+
+    const path = new google.maps.MVCArray(markers.map((marker) => new google.maps.LatLng(marker.lat(), marker.lng())));
+    const polygon = new google.maps.Polygon({ paths: path });
+
+    const area = google.maps.geometry.spherical.computeArea(polygon.getPath());
+    document.getElementById('projectsize').value = (area * 1000).toFixed(2);
+    const projectSizeInput = document.getElementById('projectsize');
+    projectSizeInput.value = (area * 1000).toFixed(2);
+  }
+</script>
+
+
+<div class="title-text" style="display: flex; justify-content: center; align-items: center; height: 30vh; text-align: center;">
+  <div>
+    <h5>Made by Viraj, Amrit, Sid, and Lance</h5>
+    <h5>@ Boilermake XI 2024</h5>
+  </div>
+</div>
+
+</body>
+</html>

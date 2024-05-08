@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+    <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Ceviche+One&family=Cookie&family=Dancing+Script:wght@700&family=El+Messiri:wght@400;500&family=Fruktur&family=Great+Vibes&family=Merienda:wght@700&family=Pacifico&family=Satisfy&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="{{ url_for('static', filename='ReportDraftStyle.css') }}">
+</head>
+<body>
+
+<div class="header">
+    <img src="{{ url_for('static', filename='images/logo.png') }}" alt="Logo" class="logo">
+    <span class="logo-text">EcoIntelliSense</span>
+    <h1>Sustainability Dashboard</h1>
+</div>
+
+<div class="row">
+  <div class="column">
+      <p><b><u>Location:</u></b> {{ data['location'] }}</p>
+      <p><b><u>Near Water:</u></b> {{ 'Yes' if data['near_water'] else 'No' }}</p>
+      <p><b><u>Labor and Cost:</u></b></p>
+      {% for item, cost in data['labor_cost'].items() %}
+      <li>{{ item }}: {{ cost }}</li>
+      {% endfor %}
+  </div>
+
+
+
+    <div class="column">
+      <p><b><u>Area:</u></b> {{ data['area'] }} m<sup>2</sup></p>
+      <p><b><u>Elevation:</u></b> {{ data['elevation'] }} m</p>
+      <p><b><u> Air Quality Index:</b></u>{{ data['air_quality_index'] }}</p>
+      <p><b><u>Sustainability Scale:</b></u>{{ data['sustainability_scale'] }}</p>
+    </div>
+
+</div>
+
+<!-- Warnings -->
+<div>
+<h2>Warnings</h2>
+<ul>
+    {% if data['near_water'] %}
+    <li>Water body nearby</li>
+    {% else %}
+    <li>No warnings detected</li>
+    {% endif %}
+</ul>
+</div>
+
+<!-- Map -->
+<div id="map" style="text-align: center;">
+    <h2>Location Map</h2>
+        <iframe
+        width="900"
+        height="250"
+        frameborder="0"
+        style="border:0"
+        referrerpolicy="no-referrer-when-downgrade"
+        src="https://www.google.com/maps/embed/v1/view?key=AIzaSyDu9WmzWfQnxsqJhWLE8CTMlSYB0VRUrkg
+        &center={{ data['coordinates'][0] }},{{ data['coordinates'][1] }}
+        &zoom=15
+        &maptype=roadmap"
+        allowfullscreen>
+        </iframe>
+</div>
+
+
+
+<!-- Solar Energy Analysis -->
+<div class="column" id="solar-energy-analysis">
+    <h2>Solar Energy Analysis</h2>
+    <div id="solar-graph"></div>
+    <script>
+        var solarData = [{ y: {{ data['solar']|tojson }}, type: "bar" }];
+
+        var solarLayout = {
+            title: "Solar Energy Analysis",
+            xaxis: {
+                tickvals: [0,1,2,3,4,5,6,7,8,9,10,11,12],
+                ticktext: ["Jan", "Feb", "Mar", "Apr", "May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"]
+            }
+        };
+
+        Plotly.newPlot("solar-graph", solarData, solarLayout, { displaylogo: false });
+    </script>
+</div>
+
+<!-- Wind Energy Analysis -->
+<div class="column" id="wind-energy-analysis">
+    <h2>Wind Energy Analysis</h2>
+    <div id="wind-graph"></div>
+    <script>
+        var C = {{ data['wind'] }};
+        
+        var xValues = Array.from({length: 12}, (_, i) => i);
+        var intersectionPoint = Math.ceil((1 / C) * Math.log(1 + 1));  // Calculate intersection point
+    
+        var y1Values = xValues.map(x => (1 / C) * Math.log(x + 1));  // Avoid log(0)
+        var y2Values = xValues.map(x => (1 / C) * x);
+    
+        var windTrace1 = {
+            x: xValues,
+            y: y1Values,
+            type: 'scatter',
+            mode: 'lines',
+            name: 'Wind'
+        };
+    
+        var windTrace2 = {
+            x: xValues,
+            y: y2Values,
+            type: 'scatter',
+            mode: 'lines',
+            name: 'Non-Renewable Energy'
+        };
+    
+        var windLayout = {
+            title: 'Wind Energy Analysis',
+            xaxis: {
+                tickvals: xValues,
+                ticktext: xValues.map(val => (val + intersectionPoint) % 12 + 1) // Adjust ticks based on intersection point
+            }   
+        };
+    
+        var windData = [windTrace1, windTrace2];
+    
+        Plotly.newPlot('wind-graph', windData, windLayout, {displaylogo: false});
+    </script>
+</div>
+
+</body>
+</html>

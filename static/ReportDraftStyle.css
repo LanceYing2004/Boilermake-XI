@@ -1,0 +1,79 @@
+body {
+  background: #f3f0e6;
+  font-family: 'El Messiri', sans-serif;
+  color: #333;
+}
+
+.header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 20px;
+  background-color: #f3f0e6;
+  height: 100px;
+}
+
+.logo-text {
+  font-size: 24px;
+  font-weight: bold;
+  color: #333;
+}
+
+.container {
+  max-width: 600px;
+  margin: 20px auto;
+  padding: 20px;
+  background-color: #f5f5f5;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+.logo {
+  width: 120px;
+  height: 85px;
+}
+
+h1 {
+  font-size: 36px;
+  color: #2e7d32;
+  margin-bottom: 20px;
+  text-align: center;
+}
+
+.column {
+  float: left;
+  width: 45%;
+  padding: 0 15px;
+  box-sizing: border-box;
+}
+
+.row:after {
+  content: "";
+  display: table;
+  clear: both;
+}
+
+.energy-analysis {
+  max-width: 400px;
+  margin: 20px auto;
+}
+
+#map {
+  height: 400px;
+  width: 80%;
+  margin: 20px auto;
+}
+
+.footer-img {
+  position: relative;
+  opacity: 0.3;
+  width: 100%;
+  max-width: 370px;
+  margin: 20px auto;
+}
+
+.footer-row {
+  display: flex;
+  justify-content: space-between;
+  padding: 20px;
+  background: #e4e1e1;
+}
